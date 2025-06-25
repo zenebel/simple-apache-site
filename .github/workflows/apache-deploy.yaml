@@ -1,0 +1,33 @@
+# Create GitHub Actions workflow to deploy Apache web server
+name: Deploy Apache Site
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Deploy to Apache
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout code
+      - uses: actions/checkout@v3
+
+      # Install Apache only if not present
+      - name: Install Apache
+        run: |
+          set -e
+          if ! apache2 -v > /dev/null 2>&1; then
+            sudo apt update
+            sudo apt install apache2 -y
+          fi
+
+      # Copy site files to Apache root
+      - name: Copy site files
+        run: |
+          set -e
+          sudo cp -r ./public-html/* /var/www/html/
+
+      # Restart Apache to apply changes
+      - name: Restart Apache
+        run: sudo systemctl restart apache2
